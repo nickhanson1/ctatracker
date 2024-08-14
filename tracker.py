@@ -141,8 +141,8 @@ def loop():
                     timetable.append(entry[0] + " to " + DEST_SHORT_NAMES[entry[1]] + ":" + time_until)
 
             display = get_display(timetable)
-            #for row in display:
-            #    print(row)
+            for row in display:
+                print(row)
             
             time.sleep(30)
     
