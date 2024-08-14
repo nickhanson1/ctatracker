@@ -1,5 +1,11 @@
 class Config:
 
+    DISPLAY_WIDTH = 25
+    DISPLAY_HEIGHT = 2
+
+    LETTER_WIDTH = 5
+    LETTER_HEIGHT = 7
+
     DEST_SHORT_NAMES = {"Forest Park" : "FP", "UIC-Halsted" : "UIC", "95th/Dan Ryan" : "95th",
                         "Howard" : "How", "Linden" : "Lndn", "Midway" : "Mdwy",
                         "Loop" : "Loop", "O'Hare" : "OHare"}
@@ -167,3 +173,7 @@ _inst = Config()
 DEST_SHORT_NAMES = _inst.DEST_SHORT_NAMES
 CONFIG_NAMES = _inst.CONFIG_NAMES
 CONFIGS = _inst.CONFIGS
+DISPLAY_WIDTH = _inst.DISPLAY_WIDTH
+DISPLAY_HEIGHT = _inst.DISPLAY_HEIGHT
+LETTER_WIDTH = _inst.LETTER_WIDTH
+LETTER_HEIGHT = _inst.LETTER_HEIGHT

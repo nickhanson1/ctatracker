@@ -5,7 +5,10 @@ import xmltodict
 from datetime import datetime, timezone, timedelta
 from tzlocal import get_localzone
 import time
-from configs import DEST_SHORT_NAMES, CONFIG_NAMES, CONFIGS
+from configs import DEST_SHORT_NAMES, CONFIG_NAMES, CONFIGS 
+from configs import LETTER_HEIGHT, LETTER_WIDTH, DISPLAY_HEIGHT, DISPLAY_WIDTH
+
+from formatter import format
 
 from font import LETTERS
 
@@ -20,11 +23,7 @@ API_KEY = "8b506f5e981e451b8174228d287e0d57"
 
 current_config = CONFIG_NAMES[0]
 
-DISPLAY_WIDTH = 25
-DISPLAY_HEIGHT = 2
 
-LETTER_WIDTH = 5
-LETTER_HEIGHT = 7
 
 """
     Queries the CTA server with the given url; the url contains the mapid of the station,
@@ -40,7 +39,10 @@ LETTER_HEIGHT = 7
 """
 def query(url):
     #while True:
-    response = requests.post(url) 
+    try:
+        response = requests.post(url) 
+    except Exception as err:
+        return {'ctatt' : {'errCd' : 1, 'errNm' : str(err)}}
     data = xmltodict.parse(response.content)
     return data
 
@@ -121,8 +123,8 @@ def get_display(str_list):
                 display[i * LETTER_HEIGHT + k] = display[i * LETTER_HEIGHT + k][:j * LETTER_WIDTH] + row + display[i * LETTER_HEIGHT + k][j * LETTER_WIDTH + LETTER_WIDTH:]
     return display
 
+
 def loop():
-    display = [[0] * (DISPLAY_WIDTH * LETTER_WIDTH)] * (DISPLAY_HEIGHT * LETTER_HEIGHT)
     while True:
         map_id = CONFIGS[current_config]["MAP_ID"]
         data = query(f"http://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?key={API_KEY}&mapid={map_id}&max=10")
@@ -130,20 +132,22 @@ def loop():
 
         if err != None:
             display = get_display([err])
+            for row in display:
+                print(row)
+            time.sleep(30)
         else:
-            print
             timetable = []
             for entry in arrivals:
                 if len(timetable) < 2:
-                    time_until = "Now"
-                    if entry[2] > 1:
-                        time_until = str(entry[2]) + " min."
-                    timetable.append(entry[0] + " to " + DEST_SHORT_NAMES[entry[1]] + ":" + time_until)
+                    timetable.append(format(entry[0], entry[1], entry[2]))
+                    #time_until = "Now"
+                    #if entry[2] > 0:
+                    #    time_until = str(entry[2]) + " min."
+                    #timetable.append(entry[0] + " to " + DEST_SHORT_NAMES[entry[1]] + ":" + time_until)
 
             display = get_display(timetable)
             for row in display:
                 print(row)
-            
             time.sleep(30)
     
 loop()
