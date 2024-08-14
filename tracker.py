@@ -5,6 +5,7 @@ import xmltodict
 from datetime import datetime, timezone, timedelta
 from tzlocal import get_localzone
 import time
+from configs import DEST_SHORT_NAMES, CONFIG_NAMES, CONFIGS
 
 from font import LETTERS
 
@@ -12,12 +13,14 @@ from font import LETTERS
 API_KEY = "8b506f5e981e451b8174228d287e0d57"
 
 
-MAP_ID = 40320
-STATION = "Division"
-ROUTE_DEST = ["Forest Park", "UIC-Halsted"]
-ROUTE_SHORT_NAMES = {"Forest Park" : "FP", "UIC-Halsted" : "UIC"}
+#MAP_ID = 40320
+#STATION = "Division"
+#ROUTE_DEST = ["Forest Park", "UIC-Halsted"]
+#ROUTE_SHORT_NAMES = {"Forest Park" : "FP", "UIC-Halsted" : "UIC"}
 
-DISPLAY_WIDTH = 30
+current_config = CONFIG_NAMES[0]
+
+DISPLAY_WIDTH = 25
 DISPLAY_HEIGHT = 2
 
 LETTER_WIDTH = 5
@@ -83,7 +86,7 @@ def get_arrivals(data):
     arrivals = []
 
     for train in data:
-        if(train['destNm'] in ROUTE_DEST):
+        if(train['destNm'] in CONFIGS[current_config]["ROUTE_DEST"]):
             arrT = train["arrT"]
             time_format = "%Y%m%d %H:%M:%S"
             arrT = datetime.strptime(arrT, time_format)
@@ -92,8 +95,8 @@ def get_arrivals(data):
             #
             nowT = now_in_cst()
             elapsed_time = arrT - now_in_cst()            
-
-            arrivals.append([STATION, train['destNm'], elapsed_time.seconds // 60])
+            
+            arrivals.append([train["staNm"], train['destNm'], elapsed_time.seconds // 60])
     
     return arrivals, None 
 
@@ -111,6 +114,8 @@ def get_display(str_list):
     display = [[0] * (DISPLAY_WIDTH * LETTER_WIDTH)] * (DISPLAY_HEIGHT * LETTER_HEIGHT)
     for i, line in enumerate(str_list):
         for j, char in enumerate(line):
+            if j >= DISPLAY_WIDTH:
+                break
             letter = LETTERS[ord(char)]
             for k, row in enumerate(letter):
                 display[i * LETTER_HEIGHT + k] = display[i * LETTER_HEIGHT + k][:j * LETTER_WIDTH] + row + display[i * LETTER_HEIGHT + k][j * LETTER_WIDTH + LETTER_WIDTH:]
@@ -119,7 +124,8 @@ def get_display(str_list):
 def loop():
     display = [[0] * (DISPLAY_WIDTH * LETTER_WIDTH)] * (DISPLAY_HEIGHT * LETTER_HEIGHT)
     while True:
-        data = query(f"http://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?key={API_KEY}&mapid={MAP_ID}&max=10")
+        map_id = CONFIGS[current_config]["MAP_ID"]
+        data = query(f"http://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?key={API_KEY}&mapid={map_id}&max=10")
         arrivals, err = get_arrivals(data)
 
         if err != None:
@@ -132,14 +138,12 @@ def loop():
                     time_until = "Now"
                     if entry[2] > 1:
                         time_until = str(entry[2]) + " min."
-                    timetable.append(entry[0] + " to " + ROUTE_SHORT_NAMES[entry[1]] + ":" + time_until)
+                    timetable.append(entry[0] + " to " + DEST_SHORT_NAMES[entry[1]] + ":" + time_until)
 
             display = get_display(timetable)
-            for row in display:
-                print(row)
+            #for row in display:
+            #    print(row)
             
-
-            print(timetable)
             time.sleep(30)
     
 loop()
