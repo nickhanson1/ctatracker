@@ -6,11 +6,13 @@ from datetime import datetime, timezone, timedelta
 from tzlocal import get_localzone
 import time
 from configs import DEST_SHORT_NAMES, CONFIG_NAMES, CONFIGS 
-from configs import LETTER_HEIGHT, LETTER_WIDTH, DISPLAY_HEIGHT, DISPLAY_WIDTH
+from configs import LETTER_HEIGHT, LETTER_WIDTH, DISPLAY_HEIGHT, DISPLAY_WIDTH, UPDATE_TIME
 
 from formatter import format
 
 from font import LETTERS
+
+from pidisplay import PiDisplay
 
 
 API_KEY = "8b506f5e981e451b8174228d287e0d57"
@@ -125,29 +127,35 @@ def get_display(str_list):
 
 
 def loop():
+    delta = 10000.0
+    last_update = time.time()
+
+    arrivals = []
+    err = []
+
+    led_display = PiDisplay(LETTER_WIDTH * DISPLAY_WIDTH)
+
     while True:
-        map_id = CONFIGS[current_config]["MAP_ID"]
-        data = query(f"http://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?key={API_KEY}&mapid={map_id}&max=10")
-        arrivals, err = get_arrivals(data)
+        if delta > UPDATE_TIME:
+            map_id = CONFIGS[current_config]["MAP_ID"]
+            data = query(f"http://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?key={API_KEY}&mapid={map_id}&max=10")
+            arrivals, err = get_arrivals(data)
+            last_update = time.time()
 
-        if err != None:
-            display = get_display([err])
-            for row in display:
-                print(row)
-            time.sleep(30)
-        else:
-            timetable = []
-            for entry in arrivals:
-                if len(timetable) < 2:
-                    timetable.append(format(entry[0], entry[1], entry[2]))
-                    #time_until = "Now"
-                    #if entry[2] > 0:
-                    #    time_until = str(entry[2]) + " min."
-                    #timetable.append(entry[0] + " to " + DEST_SHORT_NAMES[entry[1]] + ":" + time_until)
+            if err != None:
+                display = get_display([err])
+                led_display.set_current_display(display)
+            else:
+                timetable = []
+                for entry in arrivals:
+                    if len(timetable) < 2:
+                        timetable.append(format(entry[0], entry[1], entry[2]))
 
-            display = get_display(timetable)
-            for row in display:
-                print(row)
-            time.sleep(30)
+                display = get_display(timetable)
+                led_display.set_current_display(display)
+
+        delta = time.time() - last_update
+
+        led_display.update_display()
     
 loop()
