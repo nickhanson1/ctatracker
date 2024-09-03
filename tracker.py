@@ -126,6 +126,7 @@ def get_display(str_list):
     return display
 
 
+
 def loop():
     delta = 10000.0
     last_update = time.time()
@@ -133,7 +134,7 @@ def loop():
     arrivals = []
     err = []
 
-    led_display = PiDisplay(LETTER_WIDTH * DISPLAY_WIDTH)
+    led_display = PiDisplay(LETTER_HEIGHT * DISPLAY_HEIGHT, LETTER_WIDTH * DISPLAY_WIDTH)
 
     while True:
         if delta > UPDATE_TIME:
@@ -156,6 +157,7 @@ def loop():
 
         delta = time.time() - last_update
 
-        led_display.update_display()
-    
+        led_display.update_display(cmd_line=True)
+        
+
 loop()

@@ -7,11 +7,12 @@ class PiDisplay:
     column = 0
     max_columns = 0
 
-    def __init__(self, max_cols):
-        self.max_columns = max_cols
+    def __init__(self, rows, cols):
+        self.max_columns = cols
+        current_display = [[0] * cols] * rows
 
-    def set_current_display(display):
-        current_display = display
+    def set_current_display(self, display):
+        self.current_display = display
 
     def get_column(self, matrix, column):
         col = []
@@ -19,8 +20,18 @@ class PiDisplay:
             col.append(matrix[i][column])
         return col
 
-    def update_display(self):
-        column = self.get_column(self.current_display, row)
+    
+    def print_display(self):
+        for r in self.current_display:
+            print(r)
+        print()
+        print()
+
+    def update_display(self, cmd_line = False):
+        if cmd_line:
+            self.print_display()
+            return
+        column = self.get_column(self.current_display, column)
         for i in range(1, 15):
             led = LED(i)
             if column[i] == 0:
