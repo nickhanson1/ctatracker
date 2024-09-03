@@ -1,6 +1,6 @@
 class Config:
 
-    DISPLAY_WIDTH = 25
+    DISPLAY_WIDTH = 20
     DISPLAY_HEIGHT = 2
 
     UPDATE_TIME = 30
