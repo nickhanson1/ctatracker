@@ -157,7 +157,7 @@ def loop():
 
         delta = time.time() - last_update
 
-        led_display.update_display(cmd_line=True)
+        led_display.update_display(cmd_line=False)
         
 
 loop()
